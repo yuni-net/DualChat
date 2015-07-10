@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static IntPtr begin_DualChat();
+        private extern static IntPtr begin_DualChat(string user_name);
 
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static int join_guild(IntPtr chat_manager_handle);
@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         private void Form1_Load(object sender, EventArgs e)
         {
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            chat_manager = begin_DualChat();
+            chat_manager = begin_DualChat(this.user_name.Text);
         }
 
         private void label1_Click(object sender, EventArgs e)

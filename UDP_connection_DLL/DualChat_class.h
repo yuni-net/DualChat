@@ -8,6 +8,8 @@
 class DualChatClass
 {
 public:
+	DualChatClass(const char * user_name);
+
 	/***
 	@brief find and join DualChat's guild.
 	@return How many people join DualChat's guild excepting you.
@@ -29,11 +31,11 @@ public:
 
 
 
-	DualChatClass();
 	~DualChatClass();
 private:
 	SOCKET com_sock;
-
+	sockaddr_in broad_addr;
+	std::string user_name;
 	std::vector<sockaddr_in> targets;
 
 
@@ -72,6 +74,15 @@ private:
 	@param set the cliant's sockaddr_in.
 	*/
 	void tell_cliant_about_me(const sockaddr_in & cliant_addr);
+
+	/***
+	@brief set the message which tell the user that another person did join this guild in 'message' buffer.
+	@param
+	    message: set the buffer to receive the message.
+		offset: set the offset for the name's point.
+	*/
+	void tell_user_another_joined(char * message, const int offset);
+
 };
 
 #endif

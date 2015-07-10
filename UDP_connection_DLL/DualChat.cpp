@@ -3,11 +3,11 @@
 #include "DualChat.h"
 #include "DualChat_class.h"
 
-int * begin_DualChat()
+int * begin_DualChat(const char * user_name)
 {
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
-	return reinterpret_cast<int *>(new DualChatClass());
+	return reinterpret_cast<int *>(new DualChatClass(user_name));
 }
 
 int join_guild(int * chat_manager_handle)
