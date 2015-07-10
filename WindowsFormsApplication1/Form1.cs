@@ -18,13 +18,7 @@ namespace WindowsFormsApplication1
         private extern static IntPtr begin_DualChat();
 
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static int find_server(IntPtr chat_manager_handle);
-
-        [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void connect_server(IntPtr chat_manager_handle, string user_name);
-
-        [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static void build_server(IntPtr chat_manager_handle);
+        private extern static int join_guild(IntPtr chat_manager_handle);
 
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void send_message(IntPtr chat_manager_handle, string message);
@@ -59,20 +53,11 @@ namespace WindowsFormsApplication1
         {
             this.connect_button.Enabled = false;
 
-            this.main_text.AppendText("@サーバーを検索しています。\r\n@しばらくお待ちください…\r\n");
+            this.main_text.AppendText("@DualChatをしている他のマシンを検索しています。\r\n@しばらくお待ちください…\r\n");
 
-            int did_found = find_server(chat_manager);
-            if(did_found != 0)
-            {
-                this.main_text.AppendText("@サーバーが見つかりました。\r\n@接続しています…\r\n");
-                connect_server(chat_manager, this.user_name.Text);
-                this.main_text.AppendText("@接続しました。\r\n");
-            }
-            else
-            {
-                this.main_text.AppendText("@サーバーは見つかりませんでした。\r\n@このパソコンがサーバーとなります。\r\n");
-                build_server(chat_manager);
-            }
+            int party_num = join_guild(chat_manager);
+
+            this.main_text.AppendText("@現在あなた以外に" + party_num + "人がDualChatをしています。\r\n");
 
             thread4receive = new Thread(new ThreadStart(each_frame_func));
             thread4receive.Start();
@@ -89,7 +74,7 @@ namespace WindowsFormsApplication1
                 int did_receive = receive_message(chat_manager, buffer);
                 if (did_receive != 0)
                 {
-                    this.main_text.AppendText(buffer.ToString() + "\r\n");
+                    this.main_text.AppendText(buffer.ToString() + "\r\n\r\n");
                 }
             }
         }
@@ -103,11 +88,13 @@ namespace WindowsFormsApplication1
 
             string text = string.Copy(this.send_text.Text);
             this.send_text.Text = "";
-            text = this.user_name.Text + ":\r\n";
 
-            text = remove_first_atmark(text) + "\r\n\r\n";
+            text = remove_first_atmark(text);
+            text = this.user_name.Text + ":\r\n" + text;
 
             send_message(chat_manager, text);
+
+            this.main_text.AppendText(text + "\r\n\r\n");
         }
 
         private string remove_first_atmark(string text)

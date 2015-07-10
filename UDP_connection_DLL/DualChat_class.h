@@ -9,21 +9,10 @@ class DualChatClass
 {
 public:
 	/***
-	@brief search the server
-	@return found...1, not found...0
+	@brief find and join DualChat's guild.
+	@return How many people join DualChat's guild excepting you.
 	*/
-	int find_server();
-
-	/***
-	@brief connect to the server
-	@param plz set your user name(0-127 words)
-	*/
-	void connect_server(const char * user_name);
-
-	/***
-	@brief build the server
-	*/
-	void build_server();
+	int join_guild();
 
 	/***
 	@brief send the message to the server
@@ -43,16 +32,9 @@ public:
 	DualChatClass();
 	~DualChatClass();
 private:
-	bool Ima_server;
-
-	sockaddr_in server_addr;
 	SOCKET com_sock;
-//	char received_data[1024];
 
-	bool I_have_to_show;
-	char todo_show_data[1024];
-
-	std::vector<sockaddr_in> cliants;
+	std::vector<sockaddr_in> targets;
 
 
 	/***
@@ -69,7 +51,7 @@ private:
 	void convert_req_data(char req_data[1024], const char * message);
 
 	/***
-	@brief If received message is system message, process the message.
+	@brief process the received message.
 	@param
 	    message: set received message
 		cliant_addr: set cliant's sockaddr_in variable
@@ -77,13 +59,7 @@ private:
 	    You should show the message as user's message ... true
 		You should NOT show it. Caz it's system message ... false
 	*/
-	bool process_message(const char * message, const sockaddr_in & cliant_addr);
-
-	/***
-	@brief tell the cliant that I'm the server.
-	@param set cliant's sockaddr_in variable.
-	*/
-	void tell_cliant_Ima_server(const sockaddr_in & cliant_addr);
+	bool process_message(char * message, const sockaddr_in & cliant_addr);
 
 	/***
 	@brief register cliant's sockaddr_in.
@@ -92,19 +68,10 @@ private:
 	void register_cliant(const sockaddr_in & cliant_addr);
 
 	/***
-	@brief send the message to all cliant.
-	@param set your message.
+	@brief tell the cliant about me.
+	@param set the cliant's sockaddr_in.
 	*/
-	void diffuse_message(const char * message);
-
-	/***
-	@brief check whether message is the system message for finding server.
-	@param set received message.
-	@return
-	    the message is system message for finding server ... true
-		the message is NOT system message for finding server ... false
-	*/
-	bool message_is_finding_server(const char * message, const sockaddr_in & cliant_addr);
+	void tell_cliant_about_me(const sockaddr_in & cliant_addr);
 };
 
 #endif

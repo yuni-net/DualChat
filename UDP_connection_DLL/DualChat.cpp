@@ -10,22 +10,10 @@ int * begin_DualChat()
 	return reinterpret_cast<int *>(new DualChatClass());
 }
 
-int find_server(int * chat_manager_handle)
+int join_guild(int * chat_manager_handle)
 {
 	DualChatClass & chat = *reinterpret_cast<DualChatClass *>(chat_manager_handle);
-	return chat.find_server();
-}
-
-void connect_server(int * chat_manager_handle, const char * user_name)
-{
-	DualChatClass & chat = *reinterpret_cast<DualChatClass *>(chat_manager_handle);
-	chat.connect_server(user_name);
-}
-
-void build_server(int * chat_manager_handle)
-{
-	DualChatClass & chat = *reinterpret_cast<DualChatClass *>(chat_manager_handle);
-	chat.build_server();
+	return chat.join_guild();
 }
 
 void send_message(int * chat_manager_handle, const char * message)
