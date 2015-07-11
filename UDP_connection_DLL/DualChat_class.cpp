@@ -130,39 +130,35 @@ void DualChatClass::send_message(const char * message)
 
 int DualChatClass::receive_message(char * message)
 {
+	sockaddr_in recv_addr;
+	recv_addr.sin_family = AF_INET;
+	recv_addr.sin_port = htons(9696);
+	recv_addr.sin_addr.S_un.S_addr = INADDR_ANY;
+
+	int result = bind(com_sock, reinterpret_cast<sockaddr *>(&recv_addr), sizeof(recv_addr));
+	if (result == -1)
+	{
+		printf("failed to bind port\n");
+		return -1;
+	}
+
 	sockaddr_in cliant_addr;
 	int addr_len = sizeof(sockaddr_in);
 
-	fd_set fds, readfds;
-	FD_ZERO(&readfds);
-	FD_SET(com_sock, &readfds);
+	memset(message, 0, 1024);
+	recvfrom(
+		com_sock,
+		message,
+		1024,
+		0,
+		reinterpret_cast<sockaddr *>(&cliant_addr),
+		&addr_len);
 
-	timeval timev;
-	timev.tv_sec = 1;
-	timev.tv_usec = 0;
-
-	memcpy(&fds, &readfds, sizeof(fd_set));
-
-	int result = select(0, &fds, NULL, NULL, &timev);
-	if (result == 0)
+	if (process_message(message, cliant_addr))
 	{
-		return 0;
+		return 1;
 	}
-
-	if (FD_ISSET(com_sock, &fds))
-	{
-		memset(message, 0, 1024);
-		recvfrom(
-			com_sock,
-			message,
-			1024,
-			0,
-			reinterpret_cast<sockaddr *>(&cliant_addr),
-			&addr_len);
-
-		return process_message(message, cliant_addr);
-	}
-
+	
 	return 0;
 }
 
