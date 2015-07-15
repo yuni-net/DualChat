@@ -31,6 +31,7 @@ namespace WindowsFormsApplication1
 
         private IntPtr chat_manager;
         private System.Threading.Thread thread4receive;
+        private bool thread_should_run;
 
 
         public Form1()
@@ -53,12 +54,11 @@ namespace WindowsFormsApplication1
         {
             this.connect_button.Enabled = false;
 
-            this.main_text.AppendText("@DualChatをしている他のマシンを検索しています。\r\n@しばらくお待ちください…\r\n");
+            this.main_text.AppendText("@DualChatをしている他のマシンに接続しています…\r\n@DualChatをしている人が居ない場合は何も起こりません。\r\n\r\n");
 
-            int party_num = join_guild(chat_manager);
+            join_guild(chat_manager);
 
-            this.main_text.AppendText("@現在あなた以外に" + party_num + "人がDualChatをしています。\r\n");
-
+            thread_should_run = true;
             thread4receive = new Thread(new ThreadStart(each_frame_func));
             thread4receive.Start();
 
@@ -68,7 +68,7 @@ namespace WindowsFormsApplication1
 
         private void each_frame_func()
         {
-            while (true)
+            while (thread_should_run)
             {
                 StringBuilder buffer = new StringBuilder(1024);
                 int did_receive = receive_message(chat_manager, buffer);
@@ -114,6 +114,13 @@ namespace WindowsFormsApplication1
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (thread4receive != null)
+            {
+                thread_should_run = false;
+                thread4receive.Join();
+                thread4receive = null;
+            }
+
             finish_DualChat(chat_manager);
         }
     }

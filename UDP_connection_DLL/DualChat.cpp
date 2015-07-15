@@ -13,7 +13,8 @@ int * begin_DualChat(const char * user_name)
 int join_guild(int * chat_manager_handle)
 {
 	DualChatClass & chat = *reinterpret_cast<DualChatClass *>(chat_manager_handle);
-	return chat.join_guild();
+	chat.join_guild();
+	return 0;
 }
 
 void send_message(int * chat_manager_handle, const char * message)

@@ -10,8 +10,8 @@ int main()
 	char user_name[256];
 	scanf("%s", user_name);
 	int * handle = begin_DualChat(user_name);
-	const int party_num = join_guild(handle);
-	std::cout << "party_num: " << party_num << std::endl;
+	join_guild(handle);
+	std::cout << "you joined the guild" << std::endl;
 
 	char message[1024];
 	while (true)

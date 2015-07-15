@@ -1,68 +1,13 @@
 #include <string>
+#include <iostream>
 #include "DualChat_class.h"
 
 #pragma warning(disable:4996)
 
-int DualChatClass::join_guild()
+void DualChatClass::join_guild()
 {
 	broadcast_to_find();
-
-	char data[256];
-	sockaddr_in target_addr;
-	int addr_len = sizeof(sockaddr_in);	// not const for recvfrom
-
-	char expected_response [] = "   plz register me";
-	expected_response[0] = 0;
-	expected_response[1] = 0;
-	expected_response[2] = 96;
-
-	fd_set fds, readfds;
-	FD_ZERO(&readfds);
-	FD_SET(com_sock, &readfds);
-
-	timeval timev;
-	timev.tv_sec = 2;
-	timev.tv_usec = 0;
-
 	targets.clear();
-
-	while (true)
-	{
-		memcpy(&fds, &readfds, sizeof(fd_set));
-
-		int result = select(0, &fds, NULL, NULL, &timev);
-		if (result == 0)
-		{
-			// time is out
-			break;
-		}
-
-		if (FD_ISSET(com_sock, &fds) == 0)
-		{
-			// not set
-			continue;
-		}
-
-		memset(data, 0, sizeof(data));
-		recvfrom(
-			com_sock,
-			data,
-			sizeof(data),
-			0,
-			reinterpret_cast<sockaddr *>(&target_addr),
-			&addr_len);
-
-		// debug
-		data[255] = '\0';
-		printf("reversed: %s\n", data);
-
-		if (memcmp(data, expected_response, sizeof(expected_response)) == 0)
-		{
-			targets.push_back(target_addr);
-		}
-	}
-
-	return targets.size();
 }
 
 void DualChatClass::broadcast_to_find()
@@ -86,16 +31,6 @@ void DualChatClass::broadcast_to_find()
 		0,
 		(sockaddr *) &broad_addr,
 		sizeof(sockaddr_in));
-
-	// debug
-	if (result == -1)
-	{
-		printf("failed to send broadcast\n");
-	}
-	else
-	{
-		printf("suceeded to send broadcast\n");
-	}
 }
 
 
@@ -130,18 +65,6 @@ void DualChatClass::send_message(const char * message)
 
 int DualChatClass::receive_message(char * message)
 {
-	sockaddr_in recv_addr;
-	recv_addr.sin_family = AF_INET;
-	recv_addr.sin_port = htons(9696);
-	recv_addr.sin_addr.S_un.S_addr = INADDR_ANY;
-
-	int result = bind(com_sock, reinterpret_cast<sockaddr *>(&recv_addr), sizeof(recv_addr));
-	if (result == -1)
-	{
-		printf("failed to bind port\n");
-		return -1;
-	}
-
 	sockaddr_in cliant_addr;
 	int addr_len = sizeof(sockaddr_in);
 
@@ -154,11 +77,14 @@ int DualChatClass::receive_message(char * message)
 		reinterpret_cast<sockaddr *>(&cliant_addr),
 		&addr_len);
 
+	// debug
+	printf("you got a message:\n%s", message);
+
 	if (process_message(message, cliant_addr))
 	{
 		return 1;
 	}
-	
+
 	return 0;
 }
 
@@ -168,6 +94,15 @@ DualChatClass::DualChatClass(const char * user_name)
 
 	int perm = 1;
 	setsockopt(com_sock, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char *>(&perm), sizeof(int));
+
+	recv_addr.sin_family = AF_INET;
+	recv_addr.sin_port = htons(9696);
+	recv_addr.sin_addr.S_un.S_addr = INADDR_ANY;
+	int result = bind(com_sock, reinterpret_cast<sockaddr *>(&recv_addr), sizeof(recv_addr));
+	if (result == -1)
+	{
+		std::cout << "failed to bind port" << std::endl;
+	}
 
 	this->user_name = user_name;
 }

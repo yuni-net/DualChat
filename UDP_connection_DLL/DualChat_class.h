@@ -12,9 +12,8 @@ public:
 
 	/***
 	@brief find and join DualChat's guild.
-	@return How many people join DualChat's guild excepting you.
 	*/
-	int join_guild();
+	void join_guild();
 
 	/***
 	@brief send the message to the server
@@ -35,6 +34,7 @@ public:
 private:
 	SOCKET com_sock;
 	sockaddr_in broad_addr;
+	sockaddr_in recv_addr;
 	std::string user_name;
 	std::vector<sockaddr_in> targets;
 
