@@ -68,21 +68,52 @@ int DualChatClass::receive_message(char * message)
 	sockaddr_in cliant_addr;
 	int addr_len = sizeof(sockaddr_in);
 
-	memset(message, 0, 1024);
-	recvfrom(
-		com_sock,
-		message,
-		1024,
-		0,
-		reinterpret_cast<sockaddr *>(&cliant_addr),
-		&addr_len);
+	fd_set fds, readfds;
+	FD_ZERO(&readfds);
+	FD_SET(com_sock, &readfds);
 
-	// debug
-	printf("you got a message:\n%s", message);
+	timeval timev;
+	timev.tv_sec = 1;
+	timev.tv_usec = 0;
 
-	if (process_message(message, cliant_addr))
+	while (true)
 	{
-		return 1;
+		memcpy(&fds, &readfds, sizeof(fd_set));
+
+		int result = select(0, &fds, NULL, NULL, &timev);
+		if (result == 0)
+		{
+			std::cout << "time outed.\n" << std::endl;
+			break;
+		}
+
+		if (FD_ISSET(com_sock, &fds) == 0)
+		{
+			continue;
+		}
+
+		memset(message, 0, 1024);
+		recvfrom(
+			com_sock,
+			message,
+			1024,
+			0,
+			reinterpret_cast<sockaddr *>(&cliant_addr),
+			&addr_len);
+
+		if (cliant_addr.sin_addr.S_un.S_addr == my_addr)
+		{
+			// 自分自身からのメッセージは無視する
+			continue;
+		}
+
+		// debug
+		printf("you got a message:\n%s", message);
+
+		if (process_message(message, cliant_addr))
+		{
+			return 1;
+		}
 	}
 
 	return 0;
@@ -105,6 +136,28 @@ DualChatClass::DualChatClass(const char * user_name)
 	}
 
 	this->user_name = user_name;
+
+	my_addr = get_myaddr();
+}
+
+unsigned long DualChatClass::get_myaddr()
+{
+	const int buffersize = 256;
+	char buffer[buffersize];
+	gethostname(buffer, buffersize);
+
+	HOSTENT * host = gethostbyname(buffer);
+
+	char * address = host->h_addr_list[0];
+
+	if (address == nullptr)
+	{
+		std::string("自身のアドレスの取得に失敗しました");
+	}
+
+	const in_addr * inaddr = reinterpret_cast<const in_addr *>(address);
+	const char * name = inet_ntoa(*inaddr);
+	return inet_addr(name);
 }
 DualChatClass::~DualChatClass()
 {

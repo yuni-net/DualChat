@@ -35,6 +35,7 @@ private:
 	SOCKET com_sock;
 	sockaddr_in broad_addr;
 	sockaddr_in recv_addr;
+	unsigned long my_addr;
 	std::string user_name;
 	std::vector<sockaddr_in> targets;
 
@@ -83,6 +84,10 @@ private:
 	*/
 	void tell_user_another_joined(char * message, const int offset);
 
+	/***
+	@brief get my address as unsigned long value.
+	*/
+	unsigned long get_myaddr();
 };
 
 #endif
