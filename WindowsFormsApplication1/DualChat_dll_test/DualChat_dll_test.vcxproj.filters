@@ -24,12 +24,18 @@
     <ClCompile Include="..\..\UDP_connection_DLL\DualChat_class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\UDP_connection_DLL\BinaryData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\UDP_connection_DLL\DualChat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\UDP_connection_DLL\DualChat_class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\UDP_connection_DLL\BinaryData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

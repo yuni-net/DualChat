@@ -10,6 +10,7 @@ BinaryData::BinaryData(const int byte)
 void BinaryData::add(const void * value, const int byte)
 {
 	memcpy(data + next_head, value, byte);
+	next_head += byte;
 }
 
 void BinaryData::add(const char * text)

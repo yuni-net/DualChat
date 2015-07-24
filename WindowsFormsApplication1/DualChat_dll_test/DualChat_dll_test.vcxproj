@@ -83,11 +83,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\UDP_connection_DLL\BinaryData.cpp" />
     <ClCompile Include="..\..\UDP_connection_DLL\DualChat.cpp" />
     <ClCompile Include="..\..\UDP_connection_DLL\DualChat_class.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\UDP_connection_DLL\BinaryData.h" />
     <ClInclude Include="..\..\UDP_connection_DLL\DualChat.h" />
     <ClInclude Include="..\..\UDP_connection_DLL\DualChat_class.h" />
   </ItemGroup>

@@ -53,6 +53,15 @@ void DualChatClass::broadcast_to_find()
 		0,
 		(sockaddr *) &broad_addr,
 		sizeof(sockaddr_in));
+
+	// debug
+	std::cout << "broadcasted" << std::endl;
+	for (int i = 0; i < 48; ++i)
+	{
+		char code_str[256];
+		itoa(data.get_buffer()[i], code_str, 10);
+		std::cout << data.get_buffer()[i] << " (" << code_str << ")" << std::endl;
+	}
 }
 
 
@@ -68,6 +77,15 @@ void DualChatClass::send_message(const char * message)
 	const int data_size = 1024;
 	BinaryData req_data(data_size);
 	convert_req_data(req_data, message);
+
+	// debug
+	std::cout << "sended message" << std::endl;
+	for (int i = 0; i < 48; ++i)
+	{
+		char code_str[256];
+		itoa(req_data.get_buffer()[i], code_str, 10);
+		std::cout << req_data.get_buffer()[i] << " (" << code_str << ")" << std::endl;
+	}
 
 	for (unsigned int target_No = 0; target_No < targets.size(); ++target_No)
 	{
@@ -187,7 +205,8 @@ bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_a
 	if (join_request.is_same_beginning(message))
 	{
 		register_cliant(cliant_addr);
-		tell_user_another_joined(message, sizeof(join_request));
+		const int offset = sizeof(system_head) + strlen(system_sign::join) + 1;
+		tell_user_another_joined(message, offset);
 		tell_cliant_about_me(cliant_addr);
 		return true;
 	}
@@ -198,7 +217,8 @@ bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_a
 	if (reg_request.is_same_beginning(message))
 	{
 		register_cliant(cliant_addr);
-		tell_user_another_joined(message, sizeof(reg_request));
+		const int offset = sizeof(system_head) + strlen(system_sign::register_me) + 1;
+		tell_user_another_joined(message, offset);
 		return true;
 	}
 
@@ -207,7 +227,8 @@ bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_a
 	dif_request.add(system_sign::gota_message);
 	if (dif_request.is_same_beginning(message))
 	{
-		const char * main_message = message + sizeof(dif_request);
+		const int offset = sizeof(system_head)+strlen(system_sign::gota_message)+1;
+		const char * main_message = message + offset;
 		strcpy(message, main_message);
 		return true;
 	}
