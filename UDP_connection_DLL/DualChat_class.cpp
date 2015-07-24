@@ -132,7 +132,7 @@ int DualChatClass::receive_message(char * message)
 			reinterpret_cast<sockaddr *>(&cliant_addr),
 			&addr_len);
 
-		if (cliant_addr.sin_addr.S_un.S_addr == my_addr)
+		if (is_the_address_mine(cliant_addr.sin_addr.S_un.S_addr))
 		{
 			// 自分自身からのメッセージは無視する
 			continue;
@@ -146,6 +146,21 @@ int DualChatClass::receive_message(char * message)
 
 	return 0;
 }
+
+bool DualChatClass::is_the_address_mine(unsigned long address)
+{
+	for (unsigned int addr_No = 0; addr_No < myaddr_list.size(); ++addr_No)
+	{
+		const auto & myaddr = myaddr_list[addr_No];
+		if (myaddr == address)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 DualChatClass::DualChatClass()
 {
@@ -163,10 +178,10 @@ DualChatClass::DualChatClass()
 		std::cout << "failed to bind port" << std::endl;
 	}
 
-	my_addr = get_myaddr();
+	get_myaddr(myaddr_list);
 }
 
-unsigned long DualChatClass::get_myaddr()
+void DualChatClass::get_myaddr(std::vector<unsigned long> & myaddr_list)
 {
 	const int buffersize = 256;
 	char buffer[buffersize];
@@ -174,17 +189,20 @@ unsigned long DualChatClass::get_myaddr()
 
 	HOSTENT * host = gethostbyname(buffer);
 
-	char * address = host->h_addr_list[0];
-
-	if (address == nullptr)
+	int addr_No = 0;
+	while (true)
 	{
-		std::cout << "自身のアドレスの取得に失敗しました" << std::endl;
-		return 0;
-	}
+		char * base_addr = host->h_addr_list[addr_No];
+		if (base_addr == nullptr)
+		{
+			return;
+		}
 
-	const in_addr * inaddr = reinterpret_cast<const in_addr *>(address);
-	const char * name = inet_ntoa(*inaddr);
-	return inet_addr(name);
+		const in_addr * inaddr = reinterpret_cast<const in_addr *>(base_addr);
+		unsigned long myaddr = inaddr->S_un.S_addr;
+		myaddr_list.push_back(myaddr);
+		++addr_No;
+	}
 }
 DualChatClass::~DualChatClass()
 {
