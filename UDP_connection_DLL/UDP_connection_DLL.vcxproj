@@ -85,10 +85,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BinaryData.h" />
     <ClInclude Include="DualChat.h" />
     <ClInclude Include="DualChat_class.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BinaryData.cpp" />
     <ClCompile Include="DualChat.cpp" />
     <ClCompile Include="DualChat_class.cpp" />
   </ItemGroup>

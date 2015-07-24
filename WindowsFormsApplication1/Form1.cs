@@ -52,6 +52,7 @@ namespace WindowsFormsApplication1
 
         private void connect_button_Click(object sender, EventArgs e)
         {
+            this.user_name.Enabled = false;
             this.connect_button.Enabled = false;
 
             this.main_text.AppendText("@DualChatをしている他のマシンに接続しています…\r\n@DualChatをしている人が居ない場合は何も起こりません。\r\n\r\n");

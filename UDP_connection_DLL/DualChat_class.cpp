@@ -1,8 +1,30 @@
 #include <string>
 #include <iostream>
 #include "DualChat_class.h"
+#include "BinaryData.h"
 
 #pragma warning(disable:4996)
+
+class system_sign
+{
+public:
+	static const char * join;
+	static const char * gota_message;
+	static const char * register_me;
+};
+const char * system_sign::join = "plz let me join DualChat";
+const char * system_sign::gota_message = "you got a message";
+const char * system_sign::register_me = "plz register me";
+
+const unsigned short port_DualChat = 9696;
+
+static const char system_head [] = {0, 0, 96};
+
+template <typename T>
+void zeromem(T & variable)
+{
+	memset(&variable, 0, sizeof(T));
+}
 
 void DualChatClass::join_guild(const char * user_name)
 {
@@ -13,21 +35,20 @@ void DualChatClass::join_guild(const char * user_name)
 
 void DualChatClass::broadcast_to_find()
 {
-	memset(&broad_addr, 0, sizeof(sockaddr_in));
+	zeromem(broad_addr);
 	broad_addr.sin_family = AF_INET;
 	broad_addr.sin_addr.s_addr = inet_addr("255.255.255.255");
-	broad_addr.sin_port = htons(9696);
+	broad_addr.sin_port = htons(port_DualChat);
 
 	const int data_size = 256;
-	char data[data_size] = "   plz let me join DualChat";
-	data[0] = 0;
-	data[1] = 0;
-	data[2] = 96;
-	strcpy(data + 3 + strlen(data + 3) + 1, user_name.c_str());
+	BinaryData data(data_size);
+	data.add(system_head, sizeof(system_head));
+	data.add(system_sign::join);
+	data.add(user_name.c_str());
 
 	int result = sendto(
 		com_sock,
-		data,
+		data.get_buffer(),
 		data_size,
 		0,
 		(sockaddr *) &broad_addr,
@@ -35,45 +56,29 @@ void DualChatClass::broadcast_to_find()
 }
 
 
-void DualChatClass::convert_req_data(char req_data[1024], const char * message)
+void DualChatClass::convert_req_data(BinaryData & dif_request, const char * message)
 {
-	char dif_request [] = "   you got a message";
-	dif_request[0] = 0;
-	dif_request[1] = 0;
-	dif_request[2] = 96;
-
-	memcpy(req_data, dif_request, sizeof(dif_request));
-	strcpy(req_data + sizeof(dif_request), message);
+	dif_request.add(system_head, sizeof(system_head));
+	dif_request.add(system_sign::gota_message);
+	dif_request.add(message);
 }
 
 void DualChatClass::send_message(const char * message)
 {
-	char req_data[1024];
+	const int data_size = 1024;
+	BinaryData req_data(data_size);
 	convert_req_data(req_data, message);
-
-	// debug
-	printf("send message:\n");
-	for (int i = 0; i < 48; ++i)
-	{
-		char code_str[256];
-		itoa(req_data[i], code_str, 10);
-		std::cout << req_data[i] << " (" << code_str << ')' << std::endl;
-	}
-	std::cout << std::endl;
-	
 
 	for (unsigned int target_No = 0; target_No < targets.size(); ++target_No)
 	{
 		auto & target_addr = targets[target_No];
 		sendto(
 			com_sock,
-			req_data,
-			sizeof(req_data),
+			req_data.get_buffer(),
+			data_size,
 			0,
 			reinterpret_cast<sockaddr *>(&target_addr),
 			sizeof(sockaddr_in));
-
-		std::cout << target_No << ": sended to " << target_addr.sin_addr.S_un.S_addr << std::endl;
 	}
 }
 
@@ -114,25 +119,11 @@ int DualChatClass::receive_message(char * message)
 			reinterpret_cast<sockaddr *>(&cliant_addr),
 			&addr_len);
 
-		// debug
-		std::cout << "cliant's addr: " << cliant_addr.sin_addr.S_un.S_addr << std::endl;
-		std::cout << "my addr: " << my_addr << std::endl;
-
 		if (cliant_addr.sin_addr.S_un.S_addr == my_addr)
 		{
 			// 自分自身からのメッセージは無視する
 			continue;
 		}
-
-		// debug
-		printf("you got a message\n");
-		for (int i = 0; i < 48; ++i)
-		{
-			char code_str[256];
-			itoa(message[i], code_str, 10);
-			std::cout << message[i] << " (" << code_str << ')' << std::endl;
-		}
-		std::cout << std::endl;
 
 		if (process_message(message, cliant_addr))
 		{
@@ -151,7 +142,7 @@ DualChatClass::DualChatClass()
 	setsockopt(com_sock, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char *>(&perm), sizeof(int));
 
 	recv_addr.sin_family = AF_INET;
-	recv_addr.sin_port = htons(9696);
+	recv_addr.sin_port = htons(port_DualChat);
 	recv_addr.sin_addr.S_un.S_addr = INADDR_ANY;
 	int result = bind(com_sock, reinterpret_cast<sockaddr *>(&recv_addr), sizeof(recv_addr));
 	if (result == -1)
@@ -174,7 +165,8 @@ unsigned long DualChatClass::get_myaddr()
 
 	if (address == nullptr)
 	{
-		std::string("自身のアドレスの取得に失敗しました");
+		std::cout << "自身のアドレスの取得に失敗しました" << std::endl;
+		return 0;
 	}
 
 	const in_addr * inaddr = reinterpret_cast<const in_addr *>(address);
@@ -189,12 +181,10 @@ DualChatClass::~DualChatClass()
 
 bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_addr)
 {
-	char join_request [] = "   plz let me join DualChat";
-	join_request[0] = 0;
-	join_request[1] = 0;
-	join_request[2] = 96;
-
-	if (memcmp(message, join_request, sizeof(join_request)) == 0)
+	BinaryData join_request(256);
+	join_request.add(system_head, sizeof(system_head));
+	join_request.add(system_sign::join);
+	if (join_request.is_same_beginning(message))
 	{
 		register_cliant(cliant_addr);
 		tell_user_another_joined(message, sizeof(join_request));
@@ -202,28 +192,23 @@ bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_a
 		return true;
 	}
 
-	char reg_request [] = "   plz register me";
-	reg_request[0] = 0;
-	reg_request[1] = 0;
-	reg_request[2] = 96;
-
-	if (memcmp(message, reg_request, sizeof(reg_request)) == 0)
+	BinaryData reg_request(256);
+	reg_request.add(system_head, sizeof(system_head));
+	reg_request.add(system_sign::register_me);
+	if (reg_request.is_same_beginning(message))
 	{
 		register_cliant(cliant_addr);
 		tell_user_another_joined(message, sizeof(reg_request));
 		return true;
 	}
 
-	char dif_request[] = "   you got a message";
-	dif_request[0] = 0;
-	dif_request[1] = 0;
-	dif_request[2] = 96;
-
-	if (memcmp(message, dif_request, sizeof(dif_request)) == 0)
+	BinaryData dif_request(256);
+	dif_request.add(system_head, sizeof(system_head));
+	dif_request.add(system_sign::gota_message);
+	if (dif_request.is_same_beginning(message))
 	{
 		const char * main_message = message + sizeof(dif_request);
 		strcpy(message, main_message);
-		std::cout << "you got a message:\n" << message << std::endl;
 		return true;
 	}
 
@@ -242,28 +227,18 @@ void DualChatClass::tell_user_another_joined(char * message, const int offset)
 void DualChatClass::register_cliant(const sockaddr_in & cliant_addr)
 {
 	targets.push_back(cliant_addr);
-	std::cout << "a cliant was registered" << std::endl;
-	std::cout << "targets' size: " << targets.size() << std::endl;
-	for (unsigned int target_No = 0; target_No < targets.size(); ++target_No)
-	{
-		const auto & target = targets[target_No];
-		std::cout << target_No << ": " << target.sin_addr.S_un.S_addr << std::endl;
-	}
 }
 
 void DualChatClass::tell_cliant_about_me(const sockaddr_in & cliant_addr)
 {
 	const int data_size = 256;
-	char reg_request [data_size] = "   plz register me";
-	reg_request[0] = 0;
-	reg_request[1] = 0;
-	reg_request[2] = 96;
-
-	strcpy(reg_request + 3 + strlen(reg_request + 3) + 1, user_name.c_str());
+	BinaryData reg_request(data_size);
+	reg_request.add(system_head, sizeof(system_head));
+	reg_request.add(user_name.c_str());
 
 	sendto(
 		com_sock,
-		reg_request,
+		reg_request.get_buffer(),
 		data_size,
 		0,
 		reinterpret_cast<const sockaddr *>(&cliant_addr),

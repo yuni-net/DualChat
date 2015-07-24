@@ -5,6 +5,8 @@
 #pragma comment(lib, "ws2_32")
 #include <vector>
 
+class BinaryData;
+
 class DualChatClass
 {
 public:
@@ -51,7 +53,7 @@ private:
 	    req_data: set the buffer to receive req_data
 		message: set your message
 	*/
-	void convert_req_data(char req_data[1024], const char * message);
+	void convert_req_data(BinaryData & dif_request, const char * message);
 
 	/***
 	@brief process the received message.

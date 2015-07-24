@@ -16,6 +16,9 @@
     <Filter Include="DualChat">
       <UniqueIdentifier>{f32e137a-b8a1-464a-90e5-bcba85b6b9cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BinaryData">
+      <UniqueIdentifier>{28cb04d8-3072-4cb1-8e79-af50bc7246e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DualChat.h">
@@ -24,6 +27,9 @@
     <ClInclude Include="DualChat_class.h">
       <Filter>DualChat</Filter>
     </ClInclude>
+    <ClInclude Include="BinaryData.h">
+      <Filter>BinaryData</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DualChat.cpp">
@@ -31,6 +37,9 @@
     </ClCompile>
     <ClCompile Include="DualChat_class.cpp">
       <Filter>DualChat</Filter>
+    </ClCompile>
+    <ClCompile Include="BinaryData.cpp">
+      <Filter>BinaryData</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
