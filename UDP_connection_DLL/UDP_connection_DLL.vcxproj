@@ -88,6 +88,7 @@
     <ClInclude Include="BinaryData.h" />
     <ClInclude Include="DualChat.h" />
     <ClInclude Include="DualChat_class.h" />
+    <ClInclude Include="zeromem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BinaryData.cpp" />

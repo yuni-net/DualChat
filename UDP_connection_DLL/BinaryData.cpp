@@ -1,9 +1,11 @@
-#include "BinaryData.h"
 #include <cstring>
+#include "BinaryData.h"
+#include "zeromem.h"
 
 BinaryData::BinaryData(const int byte)
 {
 	data = new char[byte];
+	zeromem(data, byte);
 	next_head = 0;
 }
 

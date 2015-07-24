@@ -2,6 +2,7 @@
 #include <iostream>
 #include "DualChat_class.h"
 #include "BinaryData.h"
+#include "zeromem.h"
 
 #pragma warning(disable:4996)
 
@@ -19,12 +20,6 @@ const char * system_sign::register_me = "plz register me";
 const unsigned short port_DualChat = 9696;
 
 static const char system_head [] = {0, 0, 96};
-
-template <typename T>
-void zeromem(T & variable)
-{
-	memset(&variable, 0, sizeof(T));
-}
 
 void DualChatClass::join_guild(const char * user_name)
 {

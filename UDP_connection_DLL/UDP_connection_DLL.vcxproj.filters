@@ -30,6 +30,9 @@
     <ClInclude Include="BinaryData.h">
       <Filter>BinaryData</Filter>
     </ClInclude>
+    <ClInclude Include="zeromem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DualChat.cpp">
