@@ -42,7 +42,7 @@ void DualChatClass::convert_req_data(char req_data[1024], const char * message)
 	dif_request[1] = 0;
 	dif_request[2] = 96;
 
-	strcpy(req_data, dif_request);
+	memcpy(req_data, dif_request, sizeof(dif_request));
 	strcpy(req_data + sizeof(dif_request), message);
 }
 
@@ -53,9 +53,11 @@ void DualChatClass::send_message(const char * message)
 
 	// debug
 	printf("send message:\n");
-	for (int i = 0; i < 32; ++i)
+	for (int i = 0; i < 48; ++i)
 	{
-		std::cout << message[i] << '\0';
+		char code_str[256];
+		itoa(req_data[i], code_str, 10);
+		std::cout << req_data[i] << " (" << code_str << ')' << std::endl;
 	}
 	std::cout << std::endl;
 	
@@ -112,6 +114,10 @@ int DualChatClass::receive_message(char * message)
 			reinterpret_cast<sockaddr *>(&cliant_addr),
 			&addr_len);
 
+		// debug
+		std::cout << "cliant's addr: " << cliant_addr.sin_addr.S_un.S_addr << std::endl;
+		std::cout << "my addr: " << my_addr << std::endl;
+
 		if (cliant_addr.sin_addr.S_un.S_addr == my_addr)
 		{
 			// 自分自身からのメッセージは無視する
@@ -119,7 +125,14 @@ int DualChatClass::receive_message(char * message)
 		}
 
 		// debug
-		printf("you got a message");
+		printf("you got a message\n");
+		for (int i = 0; i < 48; ++i)
+		{
+			char code_str[256];
+			itoa(message[i], code_str, 10);
+			std::cout << message[i] << " (" << code_str << ')' << std::endl;
+		}
+		std::cout << std::endl;
 
 		if (process_message(message, cliant_addr))
 		{
