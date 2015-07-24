@@ -4,8 +4,9 @@
 
 #pragma warning(disable:4996)
 
-void DualChatClass::join_guild()
+void DualChatClass::join_guild(const char * user_name)
 {
+	this->user_name = user_name;
 	broadcast_to_find();
 	targets.clear();
 }
@@ -36,7 +37,7 @@ void DualChatClass::broadcast_to_find()
 
 void DualChatClass::convert_req_data(char req_data[1024], const char * message)
 {
-	char dif_request[] = "   you got a message";
+	char dif_request [] = "   you got a message";
 	dif_request[0] = 0;
 	dif_request[1] = 0;
 	dif_request[2] = 96;
@@ -50,6 +51,15 @@ void DualChatClass::send_message(const char * message)
 	char req_data[1024];
 	convert_req_data(req_data, message);
 
+	// debug
+	printf("send message:\n");
+	for (int i = 0; i < 32; ++i)
+	{
+		std::cout << message[i] << '\0';
+	}
+	std::cout << std::endl;
+	
+
 	for (unsigned int target_No = 0; target_No < targets.size(); ++target_No)
 	{
 		auto & target_addr = targets[target_No];
@@ -60,6 +70,8 @@ void DualChatClass::send_message(const char * message)
 			0,
 			reinterpret_cast<sockaddr *>(&target_addr),
 			sizeof(sockaddr_in));
+
+		std::cout << target_No << ": sended to " << target_addr.sin_addr.S_un.S_addr << std::endl;
 	}
 }
 
@@ -83,7 +95,6 @@ int DualChatClass::receive_message(char * message)
 		int result = select(0, &fds, NULL, NULL, &timev);
 		if (result == 0)
 		{
-			std::cout << "time outed.\n" << std::endl;
 			break;
 		}
 
@@ -108,7 +119,7 @@ int DualChatClass::receive_message(char * message)
 		}
 
 		// debug
-		printf("you got a message:\n%s", message);
+		printf("you got a message");
 
 		if (process_message(message, cliant_addr))
 		{
@@ -119,7 +130,7 @@ int DualChatClass::receive_message(char * message)
 	return 0;
 }
 
-DualChatClass::DualChatClass(const char * user_name)
+DualChatClass::DualChatClass()
 {
 	com_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -134,8 +145,6 @@ DualChatClass::DualChatClass(const char * user_name)
 	{
 		std::cout << "failed to bind port" << std::endl;
 	}
-
-	this->user_name = user_name;
 
 	my_addr = get_myaddr();
 }
@@ -167,9 +176,6 @@ DualChatClass::~DualChatClass()
 
 bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_addr)
 {
-	// debug
-	printf("received: %s\n", message + 3);
-
 	char join_request [] = "   plz let me join DualChat";
 	join_request[0] = 0;
 	join_request[1] = 0;
@@ -204,6 +210,7 @@ bool DualChatClass::process_message(char * message, const sockaddr_in & cliant_a
 	{
 		const char * main_message = message + sizeof(dif_request);
 		strcpy(message, main_message);
+		std::cout << "you got a message:\n" << message << std::endl;
 		return true;
 	}
 
@@ -222,6 +229,13 @@ void DualChatClass::tell_user_another_joined(char * message, const int offset)
 void DualChatClass::register_cliant(const sockaddr_in & cliant_addr)
 {
 	targets.push_back(cliant_addr);
+	std::cout << "a cliant was registered" << std::endl;
+	std::cout << "targets' size: " << targets.size() << std::endl;
+	for (unsigned int target_No = 0; target_No < targets.size(); ++target_No)
+	{
+		const auto & target = targets[target_No];
+		std::cout << target_No << ": " << target.sin_addr.S_un.S_addr << std::endl;
+	}
 }
 
 void DualChatClass::tell_cliant_about_me(const sockaddr_in & cliant_addr)

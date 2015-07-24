@@ -8,12 +8,12 @@
 class DualChatClass
 {
 public:
-	DualChatClass(const char * user_name);
+	DualChatClass();
 
 	/***
 	@brief find and join DualChat's guild.
 	*/
-	void join_guild();
+	void join_guild(const char * user_name);
 
 	/***
 	@brief send the message to the server

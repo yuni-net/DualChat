@@ -15,10 +15,10 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static IntPtr begin_DualChat(string user_name);
+        private extern static IntPtr begin_DualChat();
 
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
-        private extern static int join_guild(IntPtr chat_manager_handle);
+        private extern static int join_guild(IntPtr chat_manager_handle, string user_name);
 
         [DllImport("DualChat.dll", CallingConvention = CallingConvention.Cdecl)]
         private extern static void send_message(IntPtr chat_manager_handle, string message);
@@ -42,7 +42,7 @@ namespace WindowsFormsApplication1
         private void Form1_Load(object sender, EventArgs e)
         {
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            chat_manager = begin_DualChat(this.user_name.Text);
+            chat_manager = begin_DualChat();
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -56,7 +56,7 @@ namespace WindowsFormsApplication1
 
             this.main_text.AppendText("@DualChatをしている他のマシンに接続しています…\r\n@DualChatをしている人が居ない場合は何も起こりません。\r\n\r\n");
 
-            join_guild(chat_manager);
+            join_guild(chat_manager, this.user_name.Text);
 
             thread_should_run = true;
             thread4receive = new Thread(new ThreadStart(each_frame_func));
