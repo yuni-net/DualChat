@@ -132,9 +132,18 @@ int DualChatClass::receive_message(char * message)
 			reinterpret_cast<sockaddr *>(&cliant_addr),
 			&addr_len);
 
+		std::cout << "You received a message:" << std::endl;
+		for (int i = 0; i < 48; ++i)
+		{
+			char code_str[256];
+			itoa(message[i], code_str, 10);
+			std::cout << message[i] << " (" << code_str << ")" << std::endl;
+		}
+
 		if (is_the_address_mine(cliant_addr.sin_addr.S_un.S_addr))
 		{
 			// 自分自身からのメッセージは無視する
+			std::cout << "It's from my self." << std::endl;
 			continue;
 		}
 
@@ -268,6 +277,7 @@ void DualChatClass::tell_cliant_about_me(const sockaddr_in & cliant_addr)
 	const int data_size = 256;
 	BinaryData reg_request(data_size);
 	reg_request.add(system_head, sizeof(system_head));
+	reg_request.add(system_sign::register_me);
 	reg_request.add(user_name.c_str());
 
 	sendto(
